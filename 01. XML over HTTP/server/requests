@@ -1,0 +1,31 @@
+GET /todo_list HTTP/1.0
+Host: localhost
+
+POST /todo_list HTTP/1.0
+Host: localhost
+Content-Length: 134
+Content-Type: text/xml
+
+<?xml version='1.0' encoding='UTF-8'?>
+<todo_list><author_name>Bogdan</author_name><type>0</type><header>header 1</header></todo_list>
+
+***
+
+<?xml version='1.0' encoding='UTF-8'?>
+<request action="get_lists" />
+
+<?xml version='1.0' encoding='UTF-8'?>
+<request action="add_list"><todo_list><type>1</type><header>test 1</header><author_name>test</author_name></todo_list></request>
+
+<?xml version='1.0' encoding='UTF-8'?>
+<request action="update_list"><todo_list><list_id>1</list_id><header>SUPER-PUPER 1</header></todo_list></request>
+
+<?xml version='1.0' encoding='UTF-8'?>
+<request action="delete_list"><todo_list><list_id>8</list_id></todo_list></request>
+
+<?xml version='1.0' encoding='UTF-8'?>
+<request action="get_items"><list_item><list_id>5</list_id></list_item></request>
+
+<?xml version='1.0' encoding='UTF-8' ?>
+<request action="delete_item"><list_item><item_id>2</item_id></list_item></request>
+
