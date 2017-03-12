@@ -84,7 +84,7 @@ void MainWindow::parseFinished(const QString &action, const QString &status, con
                    QString("Can't delete todo-list: delete all it's items first.").arg(action));
         } else {
         QMessageBox::warning(this, tr("Warning"),
-                             QString("An error accurred during action `%1` processing.\nPlease try again.").arg(action));
+                             QString("An error accurred during action '%1' processing.\nPlease try again.").arg(action));
         }
     }
 }

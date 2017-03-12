@@ -11,7 +11,7 @@ def index():
     json_response = {'action': 'unknown', 'status': 'Error'}
     if request.content_type == 'application/json':
         try:
-            print(request.body.read())
+            print(request.body.read().decode('utf-8'))
             json_request = json.loads(request.body.read().decode('utf-8'))
         except json.JSONDecodeError:
             pass

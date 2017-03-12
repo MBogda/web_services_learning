@@ -7,6 +7,7 @@
 #include <QNetworkReply>
 #include <QJsonDocument>
 #include <QJsonObject>
+#include <QJsonArray>
 
 class ServerManager : public QObject
 {
@@ -26,12 +27,12 @@ private slots:
 public slots:
     void getLists();
     void addList(QString header = QString(), QString authorName = QString(), int type = 0);
-    void updateList(int list_id, QHash<QString, QString> params);
-    void deleteList(int list_id);
-    void getItems(int list_id);
-    void addItem(int list_id, QString body = QString(), int number = 0, int status = 0);
-    void updateItem(int item_id, QHash<QString, QString> params);
-    void deleteItem(int item_id);
+    void updateList(int listId, QHash<QString, QString> params);
+    void deleteList(int listId);
+    void getItems(int listId);
+    void addItem(int listId, QString body = QString(), int number = 0, int status = 0);
+    void updateItem(int itemId, QHash<QString, QString> params);
+    void deleteItem(int itemId);
 
 private:
     const QString url = "http://localhost:8080/";
