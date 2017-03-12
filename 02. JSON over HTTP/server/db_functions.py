@@ -4,10 +4,6 @@ import sqlite3
 default_db_name = 'todo_lists.db'
 
 
-def list_existed(list_id, conn):
-    return conn.execute('SELECT list_id FROM todo_list WHERE list_id = ?', (list_id,)).fetchone()
-
-
 def create_db(db_name=default_db_name):
     """
     This function will drop existed tables!
@@ -19,6 +15,10 @@ def create_db(db_name=default_db_name):
         conn.executescript(f.read())
     conn.commit()
     conn.close()
+
+
+def list_existed(list_id, conn):
+    return conn.execute('SELECT list_id FROM todo_list WHERE list_id = ?', (list_id,)).fetchone()
 
 
 def add_list(header=None, author_name=None, type=0, db_name=default_db_name):
