@@ -1,6 +1,8 @@
 *.7z
+
 __pycache__
 .idea
+*.db
+
 build-client-Desktop_Qt_5_7_1_GCC_64bit-Debug
 *.pro.user
-
