@@ -1,3 +1,7 @@
+# This file was developed for using GET/POST/PUT/DELETE HTTP methods, but
+# then I learned that I need to use only POST method and encode all info
+# about operations in the XML itself.
+
 import xml.etree.ElementTree as ET
 from io import BytesIO
 
