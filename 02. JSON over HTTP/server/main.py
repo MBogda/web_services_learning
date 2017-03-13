@@ -94,7 +94,7 @@ def delete_list(todo_list):
 def get_lists():
     todo_lists = db_functions.get_all_lists()
     for i in range(len(todo_lists)):
-        todo_lists[i]['created'] = str(todo_lists[i]['created'])
+        todo_lists[i]['created'] = todo_lists[i]['created'].isoformat()
     return todo_lists
 
 

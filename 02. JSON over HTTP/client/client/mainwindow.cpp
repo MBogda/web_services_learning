@@ -65,9 +65,6 @@ void MainWindow::parseFinished(const QString &action, const QString &status, con
 
             QStringList labels;
             if (todoLists[currentIndex]["type"].toInt() == 1) {
-//                for (auto item : listItems) {
-//                    labels.push_back(item["number"]);
-//                }
                 for (int i = 0; i < listItems.size(); ++i) {
                     labels.push_back(QString::number(i + 1));
                 }
@@ -177,29 +174,37 @@ void MainWindow::on_isNumericList_clicked(bool state)
 
 void MainWindow::on_addItem_clicked()
 {
-    bool ok;
-    QString item_body = QInputDialog::getText(this, tr("Add list item"),
-                                         tr("Item body:"), QLineEdit::Normal,
-                                         tr("Item body"), &ok);
-    if (ok) {
-        serverManager->addItem(todoLists[currentIndex]["list_id"].toInt(), item_body);
-        serverManager->getItems(todoLists[currentIndex]["list_id"].toInt());
+    if (currentIndex == -1) {
+        QMessageBox::information(this, tr("Information"), tr("You didn't select any todo list!"));
+    } else {
+        bool ok;
+        QString item_body = QInputDialog::getText(this, tr("Add list item"),
+                                             tr("Item body:"), QLineEdit::Normal,
+                                             tr("Item body"), &ok);
+        if (ok) {
+            serverManager->addItem(todoLists[currentIndex]["list_id"].toInt(), item_body);
+            serverManager->getItems(todoLists[currentIndex]["list_id"].toInt());
+        }
     }
 }
 
 void MainWindow::on_deleteItem_clicked()
 {
-    QModelIndexList indexes =  ui->tableWidget->selectionModel()->selectedRows();
-    if (indexes.empty()) {
-        QMessageBox::information(this, tr("Information"), tr("You didn't select any items!"));
+    if (currentIndex == -1) {
+        QMessageBox::information(this, tr("Information"), tr("You didn't select any todo list!"));
     } else {
-        QMessageBox::StandardButton ans = QMessageBox::question(this, tr("Confirm"),
-                                                        tr("Do you want to delete selected items?"));
-        if (ans == QMessageBox::Yes) {
-            for (int i = indexes.count() - 1; i >= 0; i--) {
-                serverManager->deleteItem(listItems[indexes.at(i).row()]["item_id"].toInt());
+        QModelIndexList indexes =  ui->tableWidget->selectionModel()->selectedRows();
+        if (indexes.empty()) {
+            QMessageBox::information(this, tr("Information"), tr("You didn't select any items!"));
+        } else {
+            QMessageBox::StandardButton ans = QMessageBox::question(this, tr("Confirm"),
+                                                            tr("Do you want to delete selected items?"));
+            if (ans == QMessageBox::Yes) {
+                for (int i = indexes.count() - 1; i >= 0; i--) {
+                    serverManager->deleteItem(listItems[indexes.at(i).row()]["item_id"].toInt());
+                }
+                serverManager->getItems(todoLists[currentIndex]["list_id"].toInt());
             }
-            serverManager->getItems(todoLists[currentIndex]["list_id"].toInt());
         }
     }
 }

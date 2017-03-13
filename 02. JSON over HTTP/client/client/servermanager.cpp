@@ -27,7 +27,6 @@ void ServerManager::parse(const QByteArray &data)
     QJsonObject response = d.object();
     QString action = response["action"].toString();
     QString status = response["status"].toString();
-//    QVector<QHash<QString, QString> > return_data;
     QVector<QVariantHash> return_data;
     if (action == "get_lists" || action == "get_items") {
         QString index;

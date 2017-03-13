@@ -46,7 +46,7 @@ private:
     QVector<QVariantHash> listItems;
     int currentIndex = -1;
 
-    const QString default_date = "2000-01-01 00:00:00.000000";
+    const QString default_date = "2000-01-01T00:00:00.000000";
 };
 
 #endif // MAINWINDOW_H
