@@ -117,3 +117,4 @@ def delete_item(item_id, db_name=default_db_name):
     conn.execute('DELETE FROM list_item WHERE item_id = ?', (item_id,))
     conn.commit()
     conn.close()
+    return True

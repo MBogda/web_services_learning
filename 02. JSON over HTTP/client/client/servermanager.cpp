@@ -27,7 +27,8 @@ void ServerManager::parse(const QByteArray &data)
     QJsonObject response = d.object();
     QString action = response["action"].toString();
     QString status = response["status"].toString();
-    QVector<QHash<QString, QString> > return_data;
+//    QVector<QHash<QString, QString> > return_data;
+    QVector<QVariantHash> return_data;
     if (action == "get_lists" || action == "get_items") {
         QString index;
         if (action == "get_lists")
@@ -38,13 +39,7 @@ void ServerManager::parse(const QByteArray &data)
         QJsonArray json_objects = response[index].toArray();
         for (int i = 0; i < json_objects.size(); ++i) {
             QJsonObject json_object = json_objects[i].toObject();
-
-            // QVariantHash instead of this
-            QHash<QString, QString> object;
-            for (auto field : json_object.keys()) {
-                object[field] = json_object[field].toString();
-            }
-            return_data.append(object);
+            return_data.append(json_object.toVariantHash());
         }
     }
     emit(parseFinished(action, status, return_data));
@@ -73,7 +68,7 @@ void ServerManager::addList(QString header, QString authorName, int type)
     sendRequest(doc.toJson());
 }
 
-void ServerManager::updateList(int listId, QHash<QString, QString> params)
+void ServerManager::updateList(int listId, QVariantHash params)
 {
     QJsonObject request;
     request["action"] = "update_list";
@@ -81,11 +76,11 @@ void ServerManager::updateList(int listId, QHash<QString, QString> params)
     QJsonObject todoList;
     todoList["list_id"] = listId;
     if (params.find("header") != params.end())
-        todoList["header"] = params["header"];
+        todoList["header"] = params["header"].toString();
     if (params.find("author_name") != params.end())
-        todoList["author_name"] = params["author_name"];
+        todoList["author_name"] = params["author_name"].toString();
     if (params.find("type") != params.end())
-        todoList["type"] = params["type"];
+        todoList["type"] = params["type"].toInt();
 
     request["todo_list"] = todoList;
     QJsonDocument doc(request);
@@ -126,7 +121,8 @@ void ServerManager::addItem(int listId, QString body, int number, int status)
     QJsonObject listItem;
     listItem["list_id"] = listId;
     listItem["body"] = body;
-    listItem["number"] = number;
+    if (number != 0)
+        listItem["number"] = number;
     listItem["status"] = status;
 
     request["list_item"] = listItem;
@@ -134,7 +130,7 @@ void ServerManager::addItem(int listId, QString body, int number, int status)
     sendRequest(doc.toJson());
 }
 
-void ServerManager::updateItem(int itemId, QHash<QString, QString> params)
+void ServerManager::updateItem(int itemId, QVariantHash params)
 {
     QJsonObject request;
     request["action"] = "update_item";
@@ -142,13 +138,13 @@ void ServerManager::updateItem(int itemId, QHash<QString, QString> params)
     QJsonObject listItem;
     listItem["item_id"] = itemId;
     if (params.find("list_id") != params.end())
-        listItem["list_id"] = params["list_id"];
+        listItem["list_id"] = params["list_id"].toInt();
     if (params.find("body") != params.end())
-        listItem["body"] = params["body"];
+        listItem["body"] = params["body"].toString();
     if (params.find("number") != params.end())
-        listItem["number"] = params["number"];
+        listItem["number"] = params["number"].toInt();
     if (params.find("status") != params.end())
-        listItem["status"] = params["status"];
+        listItem["status"] = params["status"].toInt();
 
     request["list_item"] = listItem;
     QJsonDocument doc(request);

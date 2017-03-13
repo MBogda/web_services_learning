@@ -22,7 +22,7 @@ private:
     bool lostListData();
 
 private slots:
-    void parseFinished(const QString &action, const QString &status, const QVector<QHash<QString, QString> > &data);
+    void parseFinished(const QString &action, const QString &status, const QVector<QVariantHash> &data);
 
     void on_addList_clicked();
     void on_deleteList_clicked();
@@ -42,11 +42,11 @@ private:
     Ui::MainWindow *ui;
     ServerManager *serverManager = new ServerManager(this);
 
-    QVector<QHash<QString, QString> > todoLists;
-    QVector<QHash<QString, QString> > listItems;
+    QVector<QVariantHash> todoLists;
+    QVector<QVariantHash> listItems;
     int currentIndex = -1;
 
-    const QString default_date = "2000-01-01T00:00:00.000000";
+    const QString default_date = "2000-01-01 00:00:00.000000";
 };
 
 #endif // MAINWINDOW_H

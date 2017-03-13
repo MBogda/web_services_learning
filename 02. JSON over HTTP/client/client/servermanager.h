@@ -17,7 +17,7 @@ public:
 
 signals:
     void finished(QByteArray data);
-    void parseFinished(const QString &action, const QString &status, const QVector<QHash<QString, QString> > &data);
+    void parseFinished(const QString &action, const QString &status, const QVector<QVariantHash> &data);
 
 private slots:
     void sendRequest(const QByteArray &data);
@@ -27,11 +27,11 @@ private slots:
 public slots:
     void getLists();
     void addList(QString header = QString(), QString authorName = QString(), int type = 0);
-    void updateList(int listId, QHash<QString, QString> params);
+    void updateList(int listId, QVariantHash params);
     void deleteList(int listId);
     void getItems(int listId);
     void addItem(int listId, QString body = QString(), int number = 0, int status = 0);
-    void updateItem(int itemId, QHash<QString, QString> params);
+    void updateItem(int itemId, QVariantHash params);
     void deleteItem(int itemId);
 
 private:

@@ -11,7 +11,8 @@ def index():
     json_response = {'action': 'unknown', 'status': 'Error'}
     if request.content_type == 'application/json':
         try:
-            print(request.body.read().decode('utf-8'))
+            # todo: use logs
+            # print(request.body.read().decode('utf-8'))
             json_request = json.loads(request.body.read().decode('utf-8'))
         except json.JSONDecodeError:
             pass
@@ -62,6 +63,7 @@ def index():
     return json.dumps(json_response)
 
 
+# todo: don't call db_functions with parameters from client, but processing them
 def add_list(todo_list):
     try:
         db_functions.add_list(**todo_list)

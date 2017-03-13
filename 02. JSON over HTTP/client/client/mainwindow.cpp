@@ -11,8 +11,8 @@ MainWindow::MainWindow(QWidget *parent) :
     ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
-    connect(serverManager, SIGNAL(parseFinished(QString,QString,QVector<QHash<QString,QString> >)),
-            this, SLOT(parseFinished(QString,QString,QVector<QHash<QString,QString> >)));
+    connect(serverManager, SIGNAL(parseFinished(QString,QString,QVector<QVariantHash>)),
+            this, SLOT(parseFinished(QString,QString,QVector<QVariantHash>)));
     serverManager->getLists();
 }
 
@@ -33,14 +33,14 @@ void MainWindow::clearListInfo()
     ui->tableWidget->setRowCount(0);
 }
 
-void MainWindow::parseFinished(const QString &action, const QString &status, const QVector<QHash<QString, QString> > &data)
+void MainWindow::parseFinished(const QString &action, const QString &status, const QVector<QVariantHash > &data)
 {
     if (status == "OK") {
         if (action == "get_lists") {
             todoLists = data;
             ui->listWidget->clear();
             for (auto todoList : todoLists) {
-                ui->listWidget->addItem(todoList["header"]);
+                ui->listWidget->addItem(todoList["header"].toString());
             }
             if (currentIndex != -1) {
                 ui->listWidget->setCurrentRow(currentIndex);
@@ -52,7 +52,7 @@ void MainWindow::parseFinished(const QString &action, const QString &status, con
             ui->tableWidget->setRowCount(listItems.size());
             int index = 0;
             for (auto listItem : listItems) {
-                QTableWidgetItem *item0 = new QTableWidgetItem(listItem["body"]);
+                QTableWidgetItem *item0 = new QTableWidgetItem(listItem["body"].toString());
                 QTableWidgetItem *item1 = new QTableWidgetItem();
                 if (listItem["status"].toInt() == 1)
                     item1->setCheckState(Qt::Checked);
@@ -127,9 +127,10 @@ void MainWindow::on_listWidget_itemClicked(QListWidgetItem *item)
     auto todoList = todoLists[currentIndex];
     serverManager->getItems(todoList["list_id"].toInt());
 
-    ui->header->setText(todoList["header"]);
-    ui->created->setDateTime(QDateTime::fromString(todoList["created"], Qt::ISODate));
-    ui->author->setText(todoList["author_name"]);
+    ui->header->setText(todoList["header"].toString());
+//    ui->created->setDateTime(QDateTime::fromString(todoList["created"].toString(), Qt::ISODate));
+    ui->created->setDateTime(todoList["created"].toDateTime());
+    ui->author->setText(todoList["author_name"].toString());
     if (todoList["type"].toInt() == 1)
         ui->isNumericList->setCheckState(Qt::Checked);
     else
@@ -140,7 +141,7 @@ void MainWindow::on_header_editingFinished()
 {
     QString newHeader = ui->header->text();
     if (currentIndex != -1 && todoLists[currentIndex]["header"] != newHeader) {
-        QHash<QString, QString> params;
+        QVariantHash params;
         params["header"] = newHeader;
         serverManager->updateList(todoLists[currentIndex]["list_id"].toInt(), params);
         serverManager->getLists();
@@ -151,7 +152,7 @@ void MainWindow::on_author_editingFinished()
 {
     QString newAuthor = ui->author->text();
     if (currentIndex != -1 && todoLists[currentIndex]["author_name"] != newAuthor) {
-        QHash<QString, QString> params;
+        QVariantHash params;
         params["author_name"] = newAuthor;
         serverManager->updateList(todoLists[currentIndex]["list_id"].toInt(), params);
         serverManager->getLists();
@@ -160,14 +161,14 @@ void MainWindow::on_author_editingFinished()
 
 void MainWindow::on_isNumericList_clicked(bool state)
 {
-    QString newType;
+    int newType;
     if (state) {
-        newType = QString::number(1);
+        newType = 1;
     } else {
-        newType = QString::number(0);
+        newType = 0;
     }
     if (currentIndex != -1 && todoLists[currentIndex]["type"] != newType) {
-        QHash<QString, QString> params;
+        QVariantHash params;
         params["type"] = newType;
         serverManager->updateList(todoLists[currentIndex]["list_id"].toInt(), params);
         serverManager->getLists();
@@ -208,7 +209,7 @@ void MainWindow::on_tableWidget_cellChanged(int row, int column)
     if (column == 0) {
         QString newBody = ui->tableWidget->item(row, column)->text();
         if (listItems[row]["body"] != newBody) {
-            QHash<QString, QString> params;
+            QVariantHash params;
             params["body"] = newBody;
             serverManager->updateItem(listItems[row]["item_id"].toInt(), params);
             serverManager->getItems(todoLists[currentIndex]["list_id"].toInt());
@@ -246,41 +247,13 @@ void MainWindow::on_tableWidget_cellChanged(int row, int column)
             item->setText(tr("In process..."));
         }
         if (listItems[row]["status"] != newStatus) {
-            QHash<QString, QString> params;
+            QVariantHash params;
             params["status"] = newStatus;
             serverManager->updateItem(listItems[row]["item_id"].toInt(), params);
             serverManager->getItems(todoLists[currentIndex]["list_id"].toInt());
         }
     }
 }
-
-//void MainWindow::on_itemUp_clicked()
-//{
-//    QModelIndexList indexes = ui->tableWidget->selectionModel()->selectedRows();
-//    if (indexes.empty()) {
-//        QMessageBox::information(this, tr("Information"), tr("You didn't select any items!"));
-//    } else {
-//        QVector<QString> newNumbers(listItems.size());
-//        for (int i = 0; i < listItems.size(); ++i)
-//            newNumbers[i] = listItems[i]["number"];
-//        for (auto index : indexes) {
-//            if (index.row() != 0) {
-//                int higher = index.row() - 1;
-//                int lower = index.row();
-////                listItems[higher]["number"].swap(listItems[lower]["number"]);
-//                newNumbers[higher].swap(newNumbers[lower]);
-//            }
-//        }
-//        QHash<QString, QString> params;
-//        for (int i = 0; i < listItems.size(); ++i) {
-//            if (newNumbers[i] != listItems[i]["number"]) {
-//                params["number"] = newNumbers[i];
-//                serverManager->updateItem(listItems[i]["item_id"].toInt(), params);
-//            }
-//        }
-//        serverManager->getItems(todoLists[currentIndex]["list_id"].toInt());
-//    }
-//}
 
 void MainWindow::on_itemUp_clicked()
 {
@@ -292,12 +265,9 @@ void MainWindow::on_itemUp_clicked()
         for (auto index: indexes) {
             sortedRows.append(index.row());
         }
-//        std::sort(sortedRows.begin(), sortedRows.end(), [] (const int &el1, const int &el2) {
-//            return el1 > el2;
-//        });
         std::sort(sortedRows.begin(), sortedRows.end());
 
-        QVector<QString> newNumbers(listItems.size());
+        QVector<QVariant> newNumbers(listItems.size());
         for (int i = 0; i < listItems.size(); ++i)
             newNumbers[i] = listItems[i]["number"];
 
@@ -327,7 +297,7 @@ void MainWindow::on_itemUp_clicked()
             else return;
         }
 
-        QHash<QString, QString> params;
+        QVariantHash params;
         for (int i = 0; i < listItems.size(); ++i) {
             if (newNumbers[i] != listItems[i]["number"]) {
                 params["number"] = newNumbers[i];
@@ -350,7 +320,7 @@ void MainWindow::on_itemDown_clicked()
         }
         std::sort(sortedRows.begin(), sortedRows.end());
 
-        QVector<QString> newNumbers(listItems.size());
+        QVector<QVariant> newNumbers(listItems.size());
         for (int i = 0; i < listItems.size(); ++i)
             newNumbers[i] = listItems[i]["number"];
 
@@ -380,7 +350,7 @@ void MainWindow::on_itemDown_clicked()
             else return;
         }
 
-        QHash<QString, QString> params;
+        QVariantHash params;
         for (int i = 0; i < listItems.size(); ++i) {
             if (newNumbers[i] != listItems[i]["number"]) {
                 params["number"] = newNumbers[i];
@@ -390,28 +360,3 @@ void MainWindow::on_itemDown_clicked()
         serverManager->getItems(todoLists[currentIndex]["list_id"].toInt());
     }
 }
-
-//void MainWindow::on_itemDown_clicked()
-//{
-//    QModelIndexList indexes = ui->tableWidget->selectionModel()->selectedRows();
-//    if (indexes.empty()) {
-//        QMessageBox::information(this, tr("Information"), tr("You didn't select any items!"));
-//    } else {
-//        std::reverse(indexes.begin(), indexes.end());
-//        for (auto index : indexes) {
-//            if (index.row() != listItems.size() - 1) {
-//                int higher = index.row();
-//                int lower = index.row() + 1;
-//                QHash<QString, QString> params;
-//                params["number"] = listItems[lower]["number"];
-//                serverManager->updateItem(listItems[higher]["item_id"].toInt(), params);
-//                params["number"] = listItems[higher]["number"];
-//                serverManager->updateItem(listItems[lower]["item_id"].toInt(), params);
-
-//                // swapping rows in listItems (for correct order)
-//                listItems[higher]["number"].swap(listItems[lower]["number"]);
-//            }
-//            serverManager->getItems(todoLists[currentIndex]["list_id"].toInt());
-//        }
-//    }
-//}
