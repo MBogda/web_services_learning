@@ -22,6 +22,7 @@ private slots:
     void sendRequest(const QString &methodName, const QVariantList &args, const char *resposeSlot);
     void responseGetLists(QVariant &data);
     void responseGetItems(QVariant &data);
+    void responseMethod(QVariant &data);
     void faultResponse(int error, const QString &message);
 
 public slots:

@@ -32,6 +32,8 @@ void ServerManager::responseGetItems(QVariant &data)
     responseGetItemsFinished(parse(data));
 }
 
+void ServerManager::responseMethod(QVariant &data) {}
+
 void ServerManager::faultResponse(int error, const QString &message) {
     qDebug() << "An Error occoured, Code: " << error << " Message: " << message;
     faultResponseFinished(error, message);
@@ -44,111 +46,82 @@ void ServerManager::getLists()
 
 void ServerManager::addList(QString header, QString authorName, int type)
 {
-//    QJsonObject request;
-//    request["action"] = "add_list";
-
-//    QJsonObject todoList;
-//    todoList["header"] = header;
-//    todoList["author_name"] = authorName;
-//    todoList["type"] = type;
-
-//    request["todo_list"] = todoList;
-//    QJsonDocument doc(request);
-//    sendRequest(doc.toJson());
+    QVariantList args;
+    args << header << authorName << type;
+    sendRequest("add_list", args, SLOT(responseMethod(QVariant&)));
 }
 
 void ServerManager::updateList(int listId, QVariantHash params)
 {
-//    QJsonObject request;
-//    request["action"] = "update_list";
-
-//    QJsonObject todoList;
-//    todoList["list_id"] = listId;
-//    if (params.find("header") != params.end())
-//        todoList["header"] = params["header"].toString();
-//    if (params.find("author_name") != params.end())
-//        todoList["author_name"] = params["author_name"].toString();
-//    if (params.find("type") != params.end())
-//        todoList["type"] = params["type"].toInt();
-
-//    request["todo_list"] = todoList;
-//    QJsonDocument doc(request);
-//    sendRequest(doc.toJson());
+    QVariantList args;
+    args << listId;
+    if (params.find("header") != params.end())
+        args << params["header"];
+    else
+        args << QVariant();
+    if (params.find("author_name") != params.end())
+        args << params["author_name"];
+    else
+        args << QVariant();
+    if (params.find("type") != params.end())
+        args << params["type"];
+    else
+        args << QVariant();
+    sendRequest("update_list", args, SLOT(responseMethod(QVariant&)));
 }
 
 void ServerManager::deleteList(int listId)
 {
-//    QJsonObject request;
-//    request["action"] = "delete_list";
-
-//    QJsonObject todoList;
-//    todoList["list_id"] = listId;
-
-//    request["todo_list"] = todoList;
-//    QJsonDocument doc(request);
-//    sendRequest(doc.toJson());
+    QVariantList args;
+    args << listId;
+    sendRequest("delete_list", args, SLOT(responseMethod(QVariant&)));
 }
 
 void ServerManager::getItems(int listId)
 {
-//    QJsonObject request;
-//    request["action"] = "get_items";
-
-//    QJsonObject listItem;
-//    listItem["list_id"] = listId;
-
-//    request["list_item"] = listItem;
-//    QJsonDocument doc(request);
-//    sendRequest(doc.toJson());
+    QVariantList args;
+    args << listId;
+    sendRequest("get_list_items", args, SLOT(responseGetItems(QVariant&)));
 }
 
 void ServerManager::addItem(int listId, QString body, int number, int status)
 {
-//    QJsonObject request;
-//    request["action"] = "add_item";
-
-//    QJsonObject listItem;
-//    listItem["list_id"] = listId;
-//    listItem["body"] = body;
-//    if (number != 0)
-//        listItem["number"] = number;
-//    listItem["status"] = status;
-
-//    request["list_item"] = listItem;
-//    QJsonDocument doc(request);
-//    sendRequest(doc.toJson());
+    QVariantList args;
+    args << listId << body;
+    if (number != 0)
+        args << number;
+    else
+        args << QVariant();
+    args << status;
+    sendRequest("add_item", args, SLOT(responseMethod(QVariant&)));
 }
 
 void ServerManager::updateItem(int itemId, QVariantHash params)
 {
-//    QJsonObject request;
-//    request["action"] = "update_item";
-
-//    QJsonObject listItem;
-//    listItem["item_id"] = itemId;
-//    if (params.find("list_id") != params.end())
-//        listItem["list_id"] = params["list_id"].toInt();
-//    if (params.find("body") != params.end())
-//        listItem["body"] = params["body"].toString();
-//    if (params.find("number") != params.end())
-//        listItem["number"] = params["number"].toInt();
-//    if (params.find("status") != params.end())
-//        listItem["status"] = params["status"].toInt();
-
-//    request["list_item"] = listItem;
-//    QJsonDocument doc(request);
-//    sendRequest(doc.toJson());
+    QVariantList args;
+    args << itemId;
+    if (params.find("list_id") != params.end())
+        args << params["list_id"];
+    else
+        args << QVariant();
+    if (params.find("body") != params.end())
+        args << params["body"];
+    else
+        args << QVariant();
+    if (params.find("number") != params.end())
+        args << params["number"];
+    else
+        args << QVariant();
+    if (params.find("status") != params.end())
+        args << params["status"];
+    else
+        args << QVariant();
+    sendRequest("update_item", args, SLOT(responseMethod(QVariant&)));
 }
 
 void ServerManager::deleteItem(int itemId)
 {
-//    QJsonObject request;
-//    request["action"] = "delete_item";
-
-//    QJsonObject listItem;
-//    listItem["item_id"] = itemId;
-
-//    request["list_item"] = listItem;
-//    QJsonDocument doc(request);
-//    sendRequest(doc.toJson());
+    QVariantList args;
+    args << itemId;
+    sendRequest("delete_item", args, SLOT(responseMethod(QVariant&)));
 }

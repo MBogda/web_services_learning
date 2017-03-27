@@ -22,7 +22,10 @@ private:
     bool lostListData();
 
 private slots:
-    void parseFinished(const QString &action, const QString &status, const QVector<QVariantHash> &data);
+//    void responseMethodFinished(const QVector<QVariantHash> &data);
+    void responseGetListsFinished(const QVector<QVariantHash> &data);
+    void responseGetItemsFinished(const QVector<QVariantHash> &data);
+    void faultResponseFinished(int error, const QString &message);
 
     void on_addList_clicked();
     void on_deleteList_clicked();
