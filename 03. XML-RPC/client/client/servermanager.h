@@ -2,12 +2,7 @@
 #define SERVERMANAGER_H
 
 #include <QObject>
-#include <QNetworkAccessManager>
-#include <QNetworkRequest>
-#include <QNetworkReply>
-#include <QJsonDocument>
-#include <QJsonObject>
-#include <QJsonArray>
+#include "maiaXmlRpcClient.h"
 
 class ServerManager : public QObject
 {
@@ -16,13 +11,18 @@ public:
     explicit ServerManager(QObject *parent = 0);
 
 signals:
-    void finished(QByteArray data);
-    void parseFinished(const QString &action, const QString &status, const QVector<QVariantHash> &data);
+    void responseGetListsFinished(const QVector<QVariantHash> &data);
+    void responseGetItemsFinished(const QVector<QVariantHash> &data);
+    void faultResponseFinished(int error, const QString &message);
+
+private:
+    QVector<QVariantHash> parse(QVariant &data);
 
 private slots:
-    void sendRequest(const QByteArray &data);
-    void getReply(QNetworkReply *reply);
-    void parse(const QByteArray &data);
+    void sendRequest(const QString &methodName, const QVariantList &args, const char *resposeSlot);
+    void responseGetLists(QVariant &data);
+    void responseGetItems(QVariant &data);
+    void faultResponse(int error, const QString &message);
 
 public slots:
     void getLists();
@@ -35,8 +35,8 @@ public slots:
     void deleteItem(int itemId);
 
 private:
-    const QString url = "http://localhost:8080/";
-    QNetworkAccessManager *networkManager = new QNetworkAccessManager(this);
+    const QUrl url {"http://localhost:8080/"};
+    MaiaXmlRpcClient *client = new MaiaXmlRpcClient(url, this);
 };
 
 #endif // SERVERMANAGER_H

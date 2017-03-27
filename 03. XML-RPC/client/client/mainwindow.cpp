@@ -1,4 +1,3 @@
-// при выборе листа его элементы берутся из сервера, а информация о самом листе - нет!!!
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
 
@@ -11,8 +10,12 @@ MainWindow::MainWindow(QWidget *parent) :
     ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
-    connect(serverManager, SIGNAL(parseFinished(QString,QString,QVector<QVariantHash>)),
-            this, SLOT(parseFinished(QString,QString,QVector<QVariantHash>)));
+    connect(serverManager, SIGNAL(responseGetListsFinished(QVector<QVariantHash>)),
+            this, SLOT(responseGetListsFinished(QVector<QVariantHash>)));
+    connect(serverManager, SIGNAL(responseGetItemsFinished(QVector<QVariantHash>)),
+            this, SLOT(responseGetItemsFinished(QVector<QVariantHash>)));
+    connect(serverManager, SIGNAL(faultResponseFinished(int,QString)),
+            this, SLOT(faultResponseFinished(int,QString)));
     serverManager->getLists();
 }
 
@@ -33,57 +36,54 @@ void MainWindow::clearListInfo()
     ui->tableWidget->setRowCount(0);
 }
 
-void MainWindow::parseFinished(const QString &action, const QString &status, const QVector<QVariantHash > &data)
+void MainWindow::responseGetListsFinished(const QVector<QVariantHash> &data)
 {
-    if (status == "OK") {
-        if (action == "get_lists") {
-            todoLists = data;
-            ui->listWidget->clear();
-            for (auto todoList : todoLists) {
-                ui->listWidget->addItem(todoList["header"].toString());
-            }
-            if (currentIndex != -1) {
-                ui->listWidget->setCurrentRow(currentIndex);
-                on_listWidget_itemClicked(ui->listWidget->item(currentIndex));
-            }
-        }
-        if (action == "get_items") {
-            listItems = data;
-            ui->tableWidget->setRowCount(listItems.size());
-            int index = 0;
-            for (auto listItem : listItems) {
-                QTableWidgetItem *item0 = new QTableWidgetItem(listItem["body"].toString());
-                QTableWidgetItem *item1 = new QTableWidgetItem();
-                if (listItem["status"].toInt() == 1)
-                    item1->setCheckState(Qt::Checked);
-                else if (listItem["status"].toInt() == 0)
-                    item1->setCheckState(Qt::Unchecked);
-                ui->tableWidget->setItem(index, 0, item0);
-                ui->tableWidget->setItem(index, 1, item1);
-                ++index;
-            }
+    todoLists = data;
+    ui->listWidget->clear();
+    for (auto todoList : todoLists) {
+        ui->listWidget->addItem(todoList["header"].toString());
+    }
+    if (currentIndex != -1) {
+        ui->listWidget->setCurrentRow(currentIndex);
+        on_listWidget_itemClicked(ui->listWidget->item(currentIndex));
+    }
+}
 
-            QStringList labels;
-            if (todoLists[currentIndex]["type"].toInt() == 1) {
-                for (int i = 0; i < listItems.size(); ++i) {
-                    labels.push_back(QString::number(i + 1));
-                }
-            } else {
-                for (auto item : listItems) {
-                    labels.push_back("⚫");
-                }
-            }
-            ui->tableWidget->setVerticalHeaderLabels(labels);
+void MainWindow::responseGetItemsFinished(const QVector<QVariantHash> &data)
+{
+    listItems = data;
+    ui->tableWidget->setRowCount(listItems.size());
+    int index = 0;
+    for (auto listItem : listItems) {
+        QTableWidgetItem *item0 = new QTableWidgetItem(listItem["body"].toString());
+        QTableWidgetItem *item1 = new QTableWidgetItem();
+        if (listItem["status"].toInt() == 1)
+            item1->setCheckState(Qt::Checked);
+        else if (listItem["status"].toInt() == 0)
+            item1->setCheckState(Qt::Unchecked);
+        ui->tableWidget->setItem(index, 0, item0);
+        ui->tableWidget->setItem(index, 1, item1);
+        ++index;
+    }
+
+    QStringList labels;
+    if (todoLists[currentIndex]["type"].toInt() == 1) {
+        for (int i = 0; i < listItems.size(); ++i) {
+            labels.push_back(QString::number(i + 1));
         }
     } else {
-        if (action == "delete_list") {
-            QMessageBox::warning(this, tr("Warning"),
-                   QString("Can't delete todo-list: delete all it's items first.").arg(action));
-        } else {
-        QMessageBox::warning(this, tr("Warning"),
-                             QString("An error accurred during action '%1' processing.\nPlease try again.").arg(action));
+        for (auto item : listItems) {
+            labels.push_back("⚫");
         }
     }
+    ui->tableWidget->setVerticalHeaderLabels(labels);
+}
+
+void MainWindow::faultResponseFinished(int error, const QString &message)
+{
+    QMessageBox::warning(this, tr("Warning"),
+                         QString("An error occurred, code: %1, message: '%2'.\nPlease try again.").arg(
+                             QString::number(error), message));
 }
 
 void MainWindow::on_addList_clicked()
