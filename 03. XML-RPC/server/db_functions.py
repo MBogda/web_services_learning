@@ -2,10 +2,8 @@ import datetime
 import sqlite3
 
 
-# todo: check types of methods' parameters
 class TodoListDataBase:
     def __init__(self, db_name='todo_lists.db'):
-        # todo? need I connect to db every time or just use one connection all the time?
         self.db_name = db_name
 
     def _create_db(self):
@@ -23,26 +21,34 @@ class TodoListDataBase:
     def _list_existed(list_id, conn):
         return conn.execute('SELECT list_id FROM todo_list WHERE list_id = ?', (list_id,)).fetchone()
 
-    def add_list(self, header=None, author_name=None, type_=0):
+    def add_list(self, header=None, author_name=None, type_=None):
         conn = sqlite3.connect(self.db_name, detect_types=sqlite3.PARSE_DECLTYPES)
-        created = datetime.datetime.now()
-        conn.execute('INSERT INTO todo_list (header, author_name, created, type) VALUES (?, ?, ?, ?)',
-                     (header, author_name, created, type_))
+        conn.execute('INSERT INTO todo_list (header, author_name, type) VALUES (?, ?, ?)',
+                     (header, author_name, type_))
         conn.commit()
         conn.close()
+        return True
 
     def update_list(self, list_id, header=None, author_name=None, type_=None):
         conn = sqlite3.connect(self.db_name)
         if not self._list_existed(list_id, conn):
             conn.close()
             return False
-        current_values = conn.execute('SELECT header, author_name, type FROM todo_list WHERE list_id = ?', (list_id,))\
-            .fetchone()
-        new_values = [header, author_name, type_]
-        for i in range(len(new_values)):
-            new_values[i] = new_values[i] if new_values[i] is not None else current_values[i]
-        conn.execute('UPDATE todo_list SET header = ?, author_name = ?, type = ? WHERE list_id = ?',
-                     (*new_values, list_id))
+        if header is None and author_name is None and type_ is None:
+            return False
+        query = 'UPDATE todo_list SET '
+        args = []
+        if header is not None:
+            query += 'header = ? '
+            args.append(header)
+        if author_name is not None:
+            query += 'author_name = ? '
+            args.append(author_name)
+        if type_ is not None:
+            query += 'type = ? '
+            args.append(type_)
+        query += 'WHERE list_id = ?'
+        conn.execute(query, (*args, list_id))
         conn.commit()
         conn.close()
         return True
@@ -67,11 +73,12 @@ class TodoListDataBase:
         result = [dict(row) for row in result]
         return result
 
-    def add_item(self, list_id, body=None, number=None, status=0):
+    def add_item(self, list_id, body=None, number=None, status=None):
         conn = sqlite3.connect(self.db_name)
         if not self._list_existed(list_id, conn):
             conn.close()
             return False
+        # todo? maybe use trigger for this
         if number is None:
             (number,) = conn.execute('SELECT MAX(number + 1) FROM list_item WHERE list_id = ?', (list_id,)).fetchone()
             if number is None:
@@ -88,13 +95,24 @@ class TodoListDataBase:
             if not self._list_existed(list_id, conn):
                 conn.close()
                 return False
-        current_values = conn.execute('SELECT list_id, body, number, status FROM list_item WHERE item_id = ?',
-                                      (item_id,)).fetchone()
-        new_values = [list_id, body, number, status]
-        for i in range(len(new_values)):
-            new_values[i] = new_values[i] if new_values[i] is not None else current_values[i]
-        conn.execute('UPDATE list_item SET list_id = ?, body = ?, number = ?, status = ? WHERE item_id = ?',
-                     (*new_values, item_id))
+        if list_id is None and body is None and number is None and status is None:
+            return False
+        query = 'UPDATE list_item SET '
+        args = []
+        if list_id is not None:
+            query += 'list_id = ? '
+            args.append(list_id)
+        if body is not None:
+            query += 'body = ? '
+            args.append(body)
+        if number is not None:
+            query += 'number = ? '
+            args.append(number)
+        if status is not None:
+            query += 'status = ? '
+            args.append(status)
+        query += 'WHERE item_id = ?'
+        conn.execute(query, (*args, item_id))
         conn.commit()
         conn.close()
         return True

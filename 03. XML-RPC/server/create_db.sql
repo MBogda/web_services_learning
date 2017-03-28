@@ -5,7 +5,7 @@ CREATE TABLE todo_list (
 list_id INTEGER PRIMARY KEY AUTOINCREMENT,
 header TEXT,
 author_name TEXT,
-created TIMESTAMP,
+created TIMESTAMP DEFAULT (DATETIME('now', 'localtime')),
 type INTEGER -- 0 is marked list, 1 is numeric list
 );
 CREATE TABLE list_item (
