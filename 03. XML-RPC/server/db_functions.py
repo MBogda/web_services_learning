@@ -1,4 +1,3 @@
-import datetime
 import sqlite3
 
 
@@ -9,7 +8,6 @@ class TodoListDataBase:
     def _create_db(self):
         """
         This function will drop existed tables!
-        :return: None
         """
         conn = sqlite3.connect(self.db_name)
         with open('create_db.sql', 'r') as f:
