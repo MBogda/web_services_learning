@@ -27,12 +27,12 @@ private slots:
 
 public slots:
     void getLists();
-    void addList(QString header = QString(), QString authorName = QString(), int type = 0);
-    void updateList(int listId, QVariantHash params);
+    void addList(const QVariantHash &args);
+    void updateList(int listId, const QVariantHash &args);
     void deleteList(int listId);
     void getItems(int listId);
-    void addItem(int listId, QString body = QString(), int number = 0, int status = 0);
-    void updateItem(int itemId, QVariantHash params);
+    void addItem(int listId, const QVariantHash &args);
+    void updateItem(int itemId, const QVariantHash &args);
     void deleteItem(int itemId);
 
 private:

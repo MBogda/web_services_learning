@@ -44,30 +44,41 @@ void ServerManager::getLists()
     sendRequest("get_all_lists", QVariantList(), SLOT(responseGetLists(QVariant&)));
 }
 
-void ServerManager::addList(QString header, QString authorName, int type)
+void ServerManager::addList(const QVariantHash &args)
 {
-    QVariantList args;
-    args << header << authorName << type;
-    sendRequest("add_list", args, SLOT(responseMethod(QVariant&)));
+    QVariantList args_list;
+    if (args.find("header") != args.end())
+        args_list << args["header"];
+    else
+        args_list << QVariant();
+    if (args.find("author_name") != args.end())
+        args_list << args["author_name"];
+    else
+        args_list << QVariant();
+    if (args.find("type") != args.end())
+        args_list << args["type"];
+    else
+        args_list << QVariant();
+    sendRequest("add_list", args_list, SLOT(responseMethod(QVariant&)));
 }
 
-void ServerManager::updateList(int listId, QVariantHash params)
+void ServerManager::updateList(int listId, const QVariantHash &args)
 {
-    QVariantList args;
-    args << listId;
-    if (params.find("header") != params.end())
-        args << params["header"];
+    QVariantList args_list;
+    args_list << listId;
+    if (args.find("header") != args.end())
+        args_list << args["header"];
     else
-        args << QVariant();
-    if (params.find("author_name") != params.end())
-        args << params["author_name"];
+        args_list << QVariant();
+    if (args.find("author_name") != args.end())
+        args_list << args["author_name"];
     else
-        args << QVariant();
-    if (params.find("type") != params.end())
-        args << params["type"];
+        args_list << QVariant();
+    if (args.find("type") != args.end())
+        args_list << args["type"];
     else
-        args << QVariant();
-    sendRequest("update_list", args, SLOT(responseMethod(QVariant&)));
+        args_list << QVariant();
+    sendRequest("update_list", args_list, SLOT(responseMethod(QVariant&)));
 }
 
 void ServerManager::deleteList(int listId)
@@ -84,39 +95,46 @@ void ServerManager::getItems(int listId)
     sendRequest("get_list_items", args, SLOT(responseGetItems(QVariant&)));
 }
 
-void ServerManager::addItem(int listId, QString body, int number, int status)
+void ServerManager::addItem(int listId, const QVariantHash &args)
 {
-    QVariantList args;
-    args << listId << body;
-    if (number != 0)
-        args << number;
+    QVariantList args_list;
+    args_list << listId;
+    if (args.find("body") != args.end())
+        args_list << args["body"];
     else
-        args << QVariant();
-    args << status;
-    sendRequest("add_item", args, SLOT(responseMethod(QVariant&)));
+        args_list << QVariant();
+    if (args.find("number") != args.end())
+        args_list << args["number"];
+    else
+        args_list << QVariant();
+    if (args.find("status") != args.end())
+        args_list << args["status"];
+    else
+        args_list << QVariant();
+    sendRequest("add_item", args_list, SLOT(responseMethod(QVariant&)));
 }
 
-void ServerManager::updateItem(int itemId, QVariantHash params)
+void ServerManager::updateItem(int itemId, const QVariantHash &args)
 {
-    QVariantList args;
-    args << itemId;
-    if (params.find("list_id") != params.end())
-        args << params["list_id"];
+    QVariantList args_list;
+    args_list << itemId;
+    if (args.find("list_id") != args.end())
+        args_list << args["list_id"];
     else
-        args << QVariant();
-    if (params.find("body") != params.end())
-        args << params["body"];
+        args_list << QVariant();
+    if (args.find("body") != args.end())
+        args_list << args["body"];
     else
-        args << QVariant();
-    if (params.find("number") != params.end())
-        args << params["number"];
+        args_list << QVariant();
+    if (args.find("number") != args.end())
+        args_list << args["number"];
     else
-        args << QVariant();
-    if (params.find("status") != params.end())
-        args << params["status"];
+        args_list << QVariant();
+    if (args.find("status") != args.end())
+        args_list << args["status"];
     else
-        args << QVariant();
-    sendRequest("update_item", args, SLOT(responseMethod(QVariant&)));
+        args_list << QVariant();
+    sendRequest("update_item", args_list, SLOT(responseMethod(QVariant&)));
 }
 
 void ServerManager::deleteItem(int itemId)

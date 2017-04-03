@@ -93,7 +93,10 @@ void MainWindow::on_addList_clicked()
                                          tr("List header:"), QLineEdit::Normal,
                                          tr("List header"), &ok);
     if (ok) {
-        serverManager->addList(list_header);
+        QVariantHash args;
+        args["header"] = list_header;
+        args["type"] = 0;
+        serverManager->addList(args);
         currentIndex = todoLists.size();
         serverManager->getLists();
     }
@@ -138,9 +141,9 @@ void MainWindow::on_header_editingFinished()
 {
     QString newHeader = ui->header->text();
     if (currentIndex != -1 && todoLists[currentIndex]["header"] != newHeader) {
-        QVariantHash params;
-        params["header"] = newHeader;
-        serverManager->updateList(todoLists[currentIndex]["list_id"].toInt(), params);
+        QVariantHash args;
+        args["header"] = newHeader;
+        serverManager->updateList(todoLists[currentIndex]["list_id"].toInt(), args);
         serverManager->getLists();
     }
 }
@@ -149,9 +152,9 @@ void MainWindow::on_author_editingFinished()
 {
     QString newAuthor = ui->author->text();
     if (currentIndex != -1 && todoLists[currentIndex]["author_name"] != newAuthor) {
-        QVariantHash params;
-        params["author_name"] = newAuthor;
-        serverManager->updateList(todoLists[currentIndex]["list_id"].toInt(), params);
+        QVariantHash args;
+        args["author_name"] = newAuthor;
+        serverManager->updateList(todoLists[currentIndex]["list_id"].toInt(), args);
         serverManager->getLists();
     }
 }
@@ -165,9 +168,9 @@ void MainWindow::on_isNumericList_clicked(bool state)
         newType = 0;
     }
     if (currentIndex != -1 && todoLists[currentIndex]["type"] != newType) {
-        QVariantHash params;
-        params["type"] = newType;
-        serverManager->updateList(todoLists[currentIndex]["list_id"].toInt(), params);
+        QVariantHash args;
+        args["type"] = newType;
+        serverManager->updateList(todoLists[currentIndex]["list_id"].toInt(), args);
         serverManager->getLists();
     }
 }
@@ -182,7 +185,10 @@ void MainWindow::on_addItem_clicked()
                                              tr("Item body:"), QLineEdit::Normal,
                                              tr("Item body"), &ok);
         if (ok) {
-            serverManager->addItem(todoLists[currentIndex]["list_id"].toInt(), item_body);
+            QVariantHash args;
+            args["body"] = item_body;
+            args["status"] = 0;
+            serverManager->addItem(todoLists[currentIndex]["list_id"].toInt(), args);
             serverManager->getItems(todoLists[currentIndex]["list_id"].toInt());
         }
     }
@@ -190,21 +196,17 @@ void MainWindow::on_addItem_clicked()
 
 void MainWindow::on_deleteItem_clicked()
 {
-    if (currentIndex == -1) {
-        QMessageBox::information(this, tr("Information"), tr("You didn't select any todo list!"));
+    QModelIndexList indexes =  ui->tableWidget->selectionModel()->selectedRows();
+    if (indexes.empty()) {
+        QMessageBox::information(this, tr("Information"), tr("You didn't select any todo lists!"));
     } else {
-        QModelIndexList indexes =  ui->tableWidget->selectionModel()->selectedRows();
-        if (indexes.empty()) {
-            QMessageBox::information(this, tr("Information"), tr("You didn't select any items!"));
-        } else {
-            QMessageBox::StandardButton ans = QMessageBox::question(this, tr("Confirm"),
-                                                            tr("Do you want to delete selected items?"));
-            if (ans == QMessageBox::Yes) {
-                for (int i = indexes.count() - 1; i >= 0; i--) {
-                    serverManager->deleteItem(listItems[indexes.at(i).row()]["item_id"].toInt());
-                }
-                serverManager->getItems(todoLists[currentIndex]["list_id"].toInt());
+        QMessageBox::StandardButton ans = QMessageBox::question(this, tr("Confirm"),
+                                                        tr("Do you want to delete selected items?"));
+        if (ans == QMessageBox::Yes) {
+            for (int i = indexes.count() - 1; i >= 0; i--) {
+                serverManager->deleteItem(listItems[indexes.at(i).row()]["item_id"].toInt());
             }
+            serverManager->getItems(todoLists[currentIndex]["list_id"].toInt());
         }
     }
 }
@@ -214,9 +216,9 @@ void MainWindow::on_tableWidget_cellChanged(int row, int column)
     if (column == 0) {
         QString newBody = ui->tableWidget->item(row, column)->text();
         if (listItems[row]["body"] != newBody) {
-            QVariantHash params;
-            params["body"] = newBody;
-            serverManager->updateItem(listItems[row]["item_id"].toInt(), params);
+            QVariantHash args;
+            args["body"] = newBody;
+            serverManager->updateItem(listItems[row]["item_id"].toInt(), args);
             serverManager->getItems(todoLists[currentIndex]["list_id"].toInt());
         }
     } else if (column == 1) {
@@ -252,9 +254,9 @@ void MainWindow::on_tableWidget_cellChanged(int row, int column)
             item->setText(tr("In process..."));
         }
         if (listItems[row]["status"] != newStatus) {
-            QVariantHash params;
-            params["status"] = newStatus;
-            serverManager->updateItem(listItems[row]["item_id"].toInt(), params);
+            QVariantHash args;
+            args["status"] = newStatus;
+            serverManager->updateItem(listItems[row]["item_id"].toInt(), args);
             serverManager->getItems(todoLists[currentIndex]["list_id"].toInt());
         }
     }
@@ -302,11 +304,11 @@ void MainWindow::on_itemUp_clicked()
             else return;
         }
 
-        QVariantHash params;
+        QVariantHash args;
         for (int i = 0; i < listItems.size(); ++i) {
             if (newNumbers[i] != listItems[i]["number"]) {
-                params["number"] = newNumbers[i];
-                serverManager->updateItem(listItems[i]["item_id"].toInt(), params);
+                args["number"] = newNumbers[i];
+                serverManager->updateItem(listItems[i]["item_id"].toInt(), args);
             }
         }
         serverManager->getItems(todoLists[currentIndex]["list_id"].toInt());
@@ -355,11 +357,11 @@ void MainWindow::on_itemDown_clicked()
             else return;
         }
 
-        QVariantHash params;
+        QVariantHash args;
         for (int i = 0; i < listItems.size(); ++i) {
             if (newNumbers[i] != listItems[i]["number"]) {
-                params["number"] = newNumbers[i];
-                serverManager->updateItem(listItems[i]["item_id"].toInt(), params);
+                args["number"] = newNumbers[i];
+                serverManager->updateItem(listItems[i]["item_id"].toInt(), args);
             }
         }
         serverManager->getItems(todoLists[currentIndex]["list_id"].toInt());
